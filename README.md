@@ -4,6 +4,6 @@
 
 #Team Members
 
-Matteo Ienzi (20270101), Rachel Dolson, Christina Meier, Sara Gama, Isabella Infusino, Winson Huang
+Matteo Ienzi (20270101), Rachel Dolson, Christina Meier, Sara Gama, Isabella Infusino, Winson Huang(20235342)
 
 Data Set: https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data
