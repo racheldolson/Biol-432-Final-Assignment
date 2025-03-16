@@ -1,0 +1,12 @@
+---
+title: "Final Assignment"
+author: "Group 4"
+date: "2025-03-16"
+output: html_document
+---
+
+
+```{r}
+Data <- read.csv("data.csv")
+```
+
