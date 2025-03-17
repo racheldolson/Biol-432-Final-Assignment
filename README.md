@@ -1,6 +1,6 @@
 # Biol-432-Final-Assignment
 
-#Team Name: Group 4
+#Team Name: if (cancer { cure(); }
 
 #Team Members
 
