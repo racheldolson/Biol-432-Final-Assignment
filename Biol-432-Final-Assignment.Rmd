@@ -9,4 +9,48 @@ output: html_document
 ```{r}
 Data <- read.csv("data.csv")
 ```
+```{r}
+str(Data)
+```
+
+## Loading packages
+```{r}
+library(BiocManager)
+library(Biostrings)
+library(reshape2)
+library(rentrez)
+library(annotate)
+library(ape)
+library(ggtree)
+library(ggplot2)
+library(dplyr)
+library(tree)
+library(randomForest)
+library(gbm)
+```
+
+## Mutating data
+```{r}
+data<-Data %>% 
+  mutate(diagnosis = as.factor(diagnosis))
+```
+```{r}
+diagData<-data %>% 
+  select(-c("id","X"))
+```
+
+## Making regression tree
+```{r}
+DiagTree<-tree(diagnosis ~ ., data=diagData)
+plot(DiagTree)
+text(DiagTree, cex=0.6, adj=0)
+```
+
+## Seeing the influence parameters have on diagnosis
+
+```{r}
+set.seed(123)
+DiagBoost<-gbm(diagnosis ~ ., data=diagData, distribution="gaussian", n.trees=25, interaction.depth=2, cv.folds=12)
+summary(DiagBoost)
+```
 
