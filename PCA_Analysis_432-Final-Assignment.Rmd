@@ -1,0 +1,95 @@
+---
+title: "PCA Analysis for 432 Final Assignment"
+author: "Sara Gama"
+date: "2025-03-16"
+output: html_document
+---
+
+
+```{r}
+cancerdat <- read.csv("WisconsinBreastCancerDiagnostic.csv")
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(caret)
+```
+
+```{r}
+sum(is.na(cancerdat))
+```
+
+```{r}
+cancerdat$diagnosis <- factor(cancerdat$diagnosis, levels = c("B", "M"))
+
+# Drop diagnosis column from the dataset for PCA 
+X <- cancerdat %>%
+  select(-diagnosis, -id)   
+```
+
+```{r}
+cor_matrix <- cor(X)
+cor_matrix
+```
+
+```{r}
+# Standardize the features 
+X_scaled <- scale(X)
+```
+
+```{r}
+pca_1 <- princomp(X_scaled, cor = T)
+```
+
+```{r}
+# Summarize PCA to view the explained variance
+summary(pca_1)
+```
+
+```{r}
+names(pca_1)
+```
+
+```{r}
+eigenvectors <- pca_1$loadings
+```
+
+```{r}
+principal_components <- pca_1$scale
+```
+
+```{r}
+combined_dat <- cbind(cancerdat, pca_1$scores)
+
+head(combined_dat)
+```
+
+```{r}
+ggplot(combined_dat, aes(x = Comp.1, y = Comp.2, color = diagnosis))+
+  geom_point()+
+  theme_minimal()+
+  labs(x = "PC1", y= "PC2")
+```
+
+```{r}
+ggplot(combined_dat, aes(x = Comp.3, y = Comp.4, color = diagnosis))+
+  geom_point()+
+  theme_minimal()+
+  labs(x = "PC3", y= "PC4")
+```
+
+```{r}
+loadings(pca_1)
+```
+
+```{r}
+summary(pca_1)
+```
+
+```{r}
+# Scree plot - variance explained by each principal component
+screeplot(pca_1, main = "Scree Plot", col = "blue", lwd = 2)
+```
+
+
