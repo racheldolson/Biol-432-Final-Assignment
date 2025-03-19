@@ -9,6 +9,7 @@ output: html_document
 ```{r}
 Data <- read.csv("data.csv")
 ```
+
 ```{r}
 str(Data)
 ```
@@ -27,6 +28,9 @@ library(dplyr)
 library(tree)
 library(randomForest)
 library(gbm)
+library(vegan)
+library(rpart)
+library(rpart.plot)
 ```
 
 ## Mutating data
@@ -34,6 +38,8 @@ library(gbm)
 data<-Data %>% 
   mutate(diagnosis = as.factor(diagnosis))
 ```
+
+
 ```{r}
 diagData<-data %>% 
   select(-c("id","X"))
@@ -41,10 +47,47 @@ diagData<-data %>%
 
 ## Making regression tree
 ```{r}
-DiagTree<-tree(diagnosis ~ ., data=diagData)
+DiagTree<-tree(diagnosis ~ ., data=diagData, method = "class")
 plot(DiagTree)
 text(DiagTree, cex=0.6, adj=0)
 ```
+
+```{r}
+DiagTreeRpart<-rpart(diagnosis ~ ., data=diagData, method = "class")
+rpart.plot(DiagTreeRpart, type = 2, extra = 104, tweak = 1.2)
+```
+
+
+
+
+
+
+## Variable importance
+```{r}
+importance <- as.data.frame(DiagTreeRpart$variable.importance)
+print(importance)
+
+par(mar = c(7, 4, 2, 2))
+plot(DiagTreeRpart$variable.importance, xlab=" ", 
+    ylab="Importance", xaxt = "n", pch=20)
+axis(1, at=1:16, labels=row.names(importance), las=2, cex.axis = 0.7)
+```
+
+
+
+## RDA
+```{r}
+top_predictors <- row.names(importance)
+TopPred <- diagData[, top_predictors, drop = FALSE]
+Diag <- as.factor(diagData$diagnosis)
+
+rda_model <- rda(TopPred ~ Diag, data = diagData)
+summary(rda_model)
+plot(rda_model, scaling = 2)
+```
+
+
+
 
 ## Seeing the influence parameters have on diagnosis
 
