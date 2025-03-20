@@ -31,6 +31,7 @@ library(gbm)
 library(vegan)
 library(rpart)
 library(rpart.plot)
+library(caret)
 ```
 
 ## Mutating data
@@ -38,7 +39,6 @@ library(rpart.plot)
 data<-Data %>% 
   mutate(diagnosis = as.factor(diagnosis))
 ```
-
 
 ```{r}
 diagData<-data %>% 
@@ -54,9 +54,13 @@ text(DiagTree, cex=0.6, adj=0)
 
 ```{r}
 DiagTreeRpart<-rpart(diagnosis ~ ., data=diagData, method = "class")
-rpart.plot(DiagTreeRpart, type = 2, extra = 104, tweak = 1.2)
+rpart.plot(DiagTreeRpart, type = 2, extra = 104, tweak = 1.2, fallen.leaves=TRUE)
 ```
 
+```{r}
+predictions<-predict(DiagTreeRpart, diagData, type="class")
+confusionMatrix(predictions, diagData$diagnosis)
+```
 
 
 
