@@ -90,8 +90,78 @@ summary(rda_model)
 plot(rda_model, scaling = 2)
 ```
 
+## RDA training and predicting
+```{r}
+# Get top predictors from regression tree
+top_predictors1 <- row.names(importance)
+TopPred1 <- diagData[, top_predictors1, drop = FALSE]
 
+# Combine predictors with diagnosis
+RDA_data <- cbind(diagnosis = diagData$diagnosis, TopPred1)
+RDA_data$diagnosis <- as.factor(RDA_data$diagnosis)
 
+# Split into training and testing sets
+set.seed(123)
+train_index <- createDataPartition(RDA_data$diagnosis, p = 0.8, list = FALSE)
+train_data <- RDA_data[train_index, ]
+test_data <- RDA_data[-train_index, ]
+
+# Creating response matrix
+Y_train <- model.matrix(~ diagnosis, data = train_data)[, -1]  
+X_train <- train_data[, -1] 
+
+# Fit RDA
+rda_model <- rda(X_train, Y_train)
+
+# Summary of RDA
+summary(rda_model)
+
+# Plot RDA
+plot(rda_model, scaling = 2,)
+
+# Predict RDA scores on test data
+X_test <- test_data[, -1]
+Y_test <- test_data$diagnosis  
+rda_pred <- predict(rda_model, newdata = X_test)
+
+# Extract first RDA axis scores
+malignant_scores <- rda_pred[, 1] 
+
+# Classify: Positive scores → Malignant, Negative scores → Benign
+predicted_class <- ifelse(malignant_scores > 0, "M", "B")
+
+# Convert to factor with same levels as actual data
+predicted_class <- factor(predicted_class, levels = levels(Y_test))
+
+# Confusion matrix to assess accuracy
+confusionMatrix(predicted_class, Y_test)
+```
+
+## Random Forest
+```{r}
+# Combine with diagnosis column
+RF_data <- cbind(diagnosis = diagData$diagnosis, TopPred)
+RF_data$diagnosis <- as.factor(RF_data$diagnosis)
+
+# Split into training and testing sets
+set.seed(123)
+train_indexRF <- createDataPartition(RF_data$diagnosis, p = 0.8, list = FALSE)
+train_dataRF <- RF_data[train_index, ]
+test_dataRF <- RF_data[-train_index, ]
+
+# Train a Random Forest model
+rf_model <- randomForest(diagnosis ~ ., data = train_dataRF, ntree = 500, importance = TRUE)
+
+# Predict on test set
+rf_pred <- predict(rf_model, test_dataRF)
+
+# Confusion matrix to evaluate accuracy
+rf_conf_matrix <- confusionMatrix(rf_pred, test_dataRF$diagnosis)
+print(rf_conf_matrix)
+
+# Variable importance plot
+varImpPlot(rf_model, main = "Random Forest Variable Importance")
+```
 
 ## Seeing the influence parameters have on diagnosis
 
