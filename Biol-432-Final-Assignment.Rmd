@@ -32,6 +32,8 @@ library(vegan)
 library(rpart)
 library(rpart.plot)
 library(caret)
+library(kernlab)
+library(pROC)
 ```
 
 ## Mutating data
@@ -62,10 +64,6 @@ predictions<-predict(DiagTreeRpart, diagData, type="class")
 confusionMatrix(predictions, diagData$diagnosis)
 ```
 
-
-
-
-
 ## Variable importance
 ```{r}
 importance <- as.data.frame(DiagTreeRpart$variable.importance)
@@ -76,8 +74,6 @@ plot(DiagTreeRpart$variable.importance, xlab=" ",
     ylab="Importance", xaxt = "n", pch=20)
 axis(1, at=1:16, labels=row.names(importance), las=2, cex.axis = 0.7)
 ```
-
-
 
 ## RDA
 ```{r}
@@ -90,81 +86,126 @@ summary(rda_model)
 plot(rda_model, scaling = 2)
 ```
 
-## RDA training and predicting
+## Data Prep for ML
 ```{r}
 # Get top predictors from regression tree
 top_predictors1 <- row.names(importance)
 TopPred1 <- diagData[, top_predictors1, drop = FALSE]
 
 # Combine predictors with diagnosis
-RDA_data <- cbind(diagnosis = diagData$diagnosis, TopPred1)
-RDA_data$diagnosis <- as.factor(RDA_data$diagnosis)
+data <- cbind(diagnosis = diagData$diagnosis, TopPred)
+data$diagnosis <- as.factor(data$diagnosis)
 
 # Split into training and testing sets
 set.seed(123)
-train_index <- createDataPartition(RDA_data$diagnosis, p = 0.8, list = FALSE)
-train_data <- RDA_data[train_index, ]
-test_data <- RDA_data[-train_index, ]
+train_index <- createDataPartition(data$diagnosis, p = 0.8, list = FALSE)
+train_data <- data[train_index, ]
+test_data <- data[-train_index, ]
+```
 
-# Creating response matrix
-Y_train <- model.matrix(~ diagnosis, data = train_data)[, -1]  
-X_train <- train_data[, -1] 
+## RDA training and predicting
+```{r}
+# Train RDA model
+rda_model <- train(diagnosis ~ .,
+                   data = train_data,
+                   method = "rda",
+                   trControl = trainControl(method = "cv", number = 5))
+# Predict
+rda_pred <- predict(rda_model, test_data)
 
-# Fit RDA
-rda_model <- rda(X_train, Y_train)
-
-# Summary of RDA
-summary(rda_model)
-
-# Plot RDA
-plot(rda_model, scaling = 2,)
-
-# Predict RDA scores on test data
-X_test <- test_data[, -1]
-Y_test <- test_data$diagnosis  
-rda_pred <- predict(rda_model, newdata = X_test)
-
-# Extract first RDA axis scores
-malignant_scores <- rda_pred[, 1] 
-
-# Classify: Positive scores → Malignant, Negative scores → Benign
-predicted_class <- ifelse(malignant_scores > 0, "M", "B")
-
-# Convert to factor with same levels as actual data
-predicted_class <- factor(predicted_class, levels = levels(Y_test))
-
-# Confusion matrix to assess accuracy
-confusionMatrix(predicted_class, Y_test)
+# Confusion Matrix
+confusionMatrix(rda_pred, test_data$diagnosis)
 ```
 
 ## Random Forest
 ```{r}
-# Combine with diagnosis column
-RF_data <- cbind(diagnosis = diagData$diagnosis, TopPred)
-RF_data$diagnosis <- as.factor(RF_data$diagnosis)
+# Train Random Forest model
+rf_model <- randomForest(diagnosis ~ ., 
+                         data = train_data, 
+                         ntree = 500, 
+                         importance = TRUE)
 
-# Split into training and testing sets
-set.seed(123)
-train_indexRF <- createDataPartition(RF_data$diagnosis, p = 0.8, list = FALSE)
-train_dataRF <- RF_data[train_index, ]
-test_dataRF <- RF_data[-train_index, ]
+# Predict
+rf_pred <- predict(rf_model, test_data)
 
-# Train a Random Forest model
-rf_model <- randomForest(diagnosis ~ ., data = train_dataRF, ntree = 500, importance = TRUE)
-
-# Predict on test set
-rf_pred <- predict(rf_model, test_dataRF)
-
-# Confusion matrix to evaluate accuracy
-rf_conf_matrix <- confusionMatrix(rf_pred, test_dataRF$diagnosis)
-print(rf_conf_matrix)
+# Confusion Matrix 
+confusionMatrix(rf_pred, test_data$diagnosis)
 
 # Variable importance plot
 varImpPlot(rf_model, main = "Random Forest Variable Importance")
 ```
 
-## Seeing the influence parameters have on diagnosis
+## LDA
+```{r}
+# Train LDA model
+lda_model <- train(diagnosis ~ ., 
+                   data = train_data, 
+                   method = "lda",
+                   trControl = trainControl(method = "cv", number = 5))
 
+# Predict
+lda_pred <- predict(lda_model, test_data)
+
+# Confusion matrix
+confusionMatrix(lda_pred, test_data$diagnosis)
+```
+
+## SVM
+```{r}
+# Train SVM model
+svm_model <- train(diagnosis ~ ., data = train_data, method = "svmRadial",
+                   trControl = trainControl(method = "cv", number = 5),
+                   prob.model = TRUE)
+
+# Predict
+svm_pred <- predict(svm_model, test_data)
+
+# Confusion Matrix
+confusionMatrix(svm_pred, test_data$diagnosis)
+```
+
+## ROC Curves
+```{r}
+# Convert labels to numeric (1 = Malignant, 0 = Benign)
+actual <- ifelse(test_data$diagnosis == "M", 1, 0)
+
+# Predicted probabilities for each model
+lda_prob <- predict(lda_model, test_data, type = "prob")[, 2]  # LDA
+rf_prob <- predict(rf_model, test_data, type = "prob")[, 2]  # RF
+svm_prob <- predict(svm_model, test_data, type = "prob")[, 2]  # SVM
+rda_prob <- predict(rda_model, test_data, type = "prob")[, 2]  # RDA
+
+# ROC curves
+lda_roc <- roc(actual, lda_prob, levels = c(0, 1), direction = "<")
+rf_roc <- roc(actual, rf_prob, levels = c(0, 1), direction = "<")
+svm_roc <- roc(actual, svm_prob, levels = c(0, 1), direction = "<")
+rda_roc <- roc(actual, rda_prob, levels = c(0, 1), direction = "<")
+
+# Plot ROC curves
+ggplot() +
+  geom_line(aes(x = 1 - lda_roc$specificities, y = lda_roc$sensitivities, color = "LDA")) +
+  geom_line(aes(x = 1 - rf_roc$specificities, y = rf_roc$sensitivities, color = "Random Forest")) +
+  geom_line(aes(x = 1 - svm_roc$specificities, y = svm_roc$sensitivities, color = "SVM")) +
+  geom_line(aes(x = 1 - rda_roc$specificities, y = rda_roc$sensitivities, color = "RDA")) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray") +
+  labs(title = "ROC Curve Comparison", x = "Specificity", y = "Sensitivity") +
+  scale_color_manual(name = "Model", values = c("LDA" = "blue", "Random Forest" = "green", "SVM" = "red", "RDA" = "black"))
+
+# AUC Values
+lda_auc <- auc(actual, lda_prob)
+rf_auc <- auc(actual, rf_prob)
+svm_auc <- auc(actual, svm_prob)
+rda_auc <- auc(actual, rda_prob)
+
+# AUC Results
+auc_results <- data.frame(
+  Model = c("LDA", "Random Forest", "SVM", "RDA"),
+  AUC = c(lda_auc, rf_auc, svm_auc, rda_auc)
+)
+auc_results
+```
+
+## Seeing the influence parameters have on diagnosis
 ```{r}
 set.seed(123)
 DiagBoost<-gbm(diagnosis ~ ., data=diagData, distribution="gaussian", n.trees=25, interaction.depth=2, cv.folds=12)
