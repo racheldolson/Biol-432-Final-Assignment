@@ -1,6 +1,6 @@
 # Biol-432-Final-Assignment
 
-#Team Name: if (cancer) { cure(); }
+#Team Name: Tumor Trackers
 
 #Team Members
 
