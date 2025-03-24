@@ -214,25 +214,16 @@ summary(DiagBoost)
 
 ## PCA
 
+
 ```{r}
-cancerdat <- read.csv("WisconsinBreastCancerDiagnostic.csv")
+sum(is.na(Data))
 ```
 
 ```{r}
-library(ggplot2)
-library(dplyr)
-library(caret)
-```
-
-```{r}
-sum(is.na(cancerdat))
-```
-
-```{r}
-cancerdat$diagnosis <- factor(cancerdat$diagnosis, levels = c("B", "M"))
+Data$diagnosis <- factor(Data$diagnosis, levels = c("B", "M"))
 
 # Drop diagnosis column from the dataset for PCA 
-X <- cancerdat %>%
+X <- Data %>%
   select(-diagnosis, -id)   
 ```
 
