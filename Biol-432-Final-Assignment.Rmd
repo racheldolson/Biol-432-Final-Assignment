@@ -19,7 +19,7 @@ dim(data)
 
 ## Loading packages
 
-```{r}
+```{r, include=FALSE}
 library(BiocManager)
 library(Biostrings)
 library(reshape2)
