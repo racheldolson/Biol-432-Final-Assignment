@@ -5,6 +5,7 @@ date: "2025-03-16"
 output: html_document
 ---
 
+## Loading and checking data
 
 ```{r}
 Data <- read.csv("data.csv")
@@ -12,9 +13,12 @@ Data <- read.csv("data.csv")
 
 ```{r}
 str(Data)
+head(data)
+dim(data)
 ```
 
 ## Loading packages
+
 ```{r}
 library(BiocManager)
 library(Biostrings)
@@ -35,17 +39,19 @@ library(caret)
 ```
 
 ## Mutating data
+
 ```{r}
 data<-Data %>% 
-  mutate(diagnosis = as.factor(diagnosis))
+  mutate(diagnosis = as.factor(diagnosis)) #Changing the diagnosis column from a character to a factor
 ```
 
 ```{r}
 diagData<-data %>% 
-  select(-c("id","X"))
+  select(-c("id","X")) #Removing the id and X columns as they are not needed for our analysis
 ```
 
 ## Making regression tree
+
 ```{r}
 DiagTree<-tree(diagnosis ~ ., data=diagData, method = "class")
 plot(DiagTree)
@@ -63,6 +69,7 @@ confusionMatrix(predictions, diagData$diagnosis)
 ```
 
 ## Variable importance
+
 ```{r}
 importance <- as.data.frame(DiagTreeRpart$variable.importance)
 print(importance)
@@ -74,6 +81,7 @@ axis(1, at=1:16, labels=row.names(importance), las=2, cex.axis = 0.7)
 ```
 
 ## RDA
+
 ```{r}
 top_predictors <- row.names(importance)
 TopPred <- diagData[, top_predictors, drop = FALSE]
@@ -85,6 +93,7 @@ plot(rda_model, scaling = 2)
 ```
 
 ## Seeing the influence parameters have on diagnosis
+
 ```{r}
 set.seed(123)
 DiagBoost<-gbm(diagnosis ~ ., data=diagData, distribution="gaussian", n.trees=25, interaction.depth=2, cv.folds=12)
@@ -92,7 +101,6 @@ summary(DiagBoost)
 ```
 
 ## PCA
-
 
 ```{r}
 sum(is.na(Data))
