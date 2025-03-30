@@ -11,7 +11,7 @@ Data Set: https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data
 This repository contains the raw dataset for a diagnostic breast cancer analysis from Wisconsin. The files include data analysis to determine which tumor factors are associated with benign and malignant tumors. There are 10 features associated with breast cancer tumors included in the dataset, they are each measured 3 different ways. They are measured by the mean, maximum, and standard error. A regression tree, RDA, LDA, RF, SVM and PCA were used to answer the questions we are interested in. 
 
 The questions which are being answered are 
-(1) What are the major features classifying benign and malignant tumors? 
+(1) Which features are most correlated with a benign/malignant tumor? 
 (2) Can we predict whether a sample is benign or cancerous? 
-(3) Which features are most correlated with a benign/malignant tumor? 
+
 
