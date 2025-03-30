@@ -4,6 +4,21 @@ author: "Group 4"
 date: "2025-03-16"
 output: html_document
 ---
+https://github.com/racheldolson/Biol-432-Final-Assignment 
+
+Group members: Matteo Ienzi (20270101), Rachel Dolson (20339605), Christina Meier (20213829), Sara Gama (20292893), Isabella Infusino (20218982), Winson Huang (20235342)
+
+## Dataset Description
+
+In this data set, we have many samples from benign (n = 357) and malignant (n = 212) breast cancer tumors with feature information such as radius, texture, perimeter, smoothness and more. There are 10 parameters in the data set, each parameter is measured based on their mean, standard error and the maximum value. We will determine the major predictors of the two types of tumors by creating a regression tree. The results from this tree will be used in the RDA to make a more accurate analysis. From this information, it's plausible to train a ML model to predict whether samples given these features are benign or malignant. We choose to do an RDA because it is a compromise between LDA and QDA, therefore getting the best model possible. It will be successful if it can accurately predict if the samples are cancerous or not. Additionally, we also aim to address which physical characteristics correlate most to a sample either being benign or cancerous. This will be done by running a PCA, and running a biplot to visualize directionality of feature importance.
+
+Learning, U. M. (2016, September 25). Breast cancer wisconsin (diagnostic) data set. Kaggle. https://www.kaggle.com/datasets/uciml/breast-cancer-wisconsin-data 
+
+## Questions we are interested in answering
+
+(1) What are the major features classifying benign and malignant tumors? 
+(2) Can we predict whether a sample is benign or cancerous? 
+(3) Which features are most correlated with a benign/malignant tumor? 
 
 ## Loading and checking data
 
