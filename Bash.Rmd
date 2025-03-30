@@ -1,0 +1,23 @@
+```{python}
+
+# Isabella Infusino
+# March 24th
+# python regex expression to replace underscores with spaces in the column titles
+
+import pandas as pd
+import re
+
+df.columns = df.columns.str.replace("_", " ", regex = True)
+
+df.to_csv("BIOL 432 Final.csv", index = False)
+
+```
+
+```{r}
+# Isabella Infusino
+# March 24th
+# R regex expression to replace underscores with spaces in the column titles
+
+
+colnames(Data) <- gsub("_", " ", colnames(Data))
+```
