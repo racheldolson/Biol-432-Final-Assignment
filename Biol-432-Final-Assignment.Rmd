@@ -115,6 +115,20 @@ DiagBoost<-gbm(diagnosis ~ ., data=diagData, distribution="gaussian", n.trees=25
 summary(DiagBoost)
 ```
 
+## Machine Learning Analysis
+
+All model training, evaluation and plotting were done in 'ml_models.R'.
+Due to these steps being computationally intensive, we ran this script externally and noted the inputs and outputs.
+
+- Inputs: Breast cancer dataset with selected predictors
+- Outputs:
+  - rda_model, lda_model, rf_model, svm_model - trained models
+  - top_features_barplot - Random Forest importance features
+  - conf_matrix_results_long - confusion matrix of all the models into barplots
+  - roc_curve_comparison - ROC curves
+  - auc_results - AUC scores
+
+
 ## PCA
 
 ```{r}
